@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intercambio de Regalos & Amigo Secreto</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    h1, h2, h3, .font-fun {
+      font-family: 'Fredoka', cursive;
+    }
+
+    /* Temas Visuales */
+    body.theme-christmas {
+      background: linear-gradient(135deg, #0f2b1d 0%, #1c4730 50%, #0d1f15 100%);
+      color: #f8fafc;
+    }
+    body.theme-birthday {
+      background: linear-gradient(135deg, #2a0845 0%, #6441a5 50%, #2a0845 100%);
+      color: #f8fafc;
+    }
+    body.theme-elegant {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      color: #f8fafc;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    .glass-input {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+    .glass-input:focus {
+      border-color: #38bdf8;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
+    }
+
+    /* Scratch Canvas Container */
+    #scratch-container {
+      position: relative;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #scratch-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      cursor: pointer;
+      touch-action: none;
+      border-radius: 1rem;
+      z-index: 20;
+    }
+
+    /* Snow effect */
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      pointer-events: none;
+      color: rgba(255, 255, 255, 0.7);
+      animation: fall linear infinite;
+      z-index: 1;
+    }
+    @keyframes fall {
+      to { transform: translateY(105vh) rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="theme-christmas min-h-screen pb-12 transition-all">
+
+  <!-- Floating particles container -->
+  <div id="particles-container" class="fixed inset-0 pointer-events-none z-0"></div>
+
+  <!-- Main Layout -->
+  <div class="relative z-10 max-w-5xl mx-auto px-4 py-8">
+
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full glass-card mb-4 text-sm font-medium">
+        <i class="fa-solid fa-gift text-red-400"></i>
+        <span>Intercambio de Regalos Secreto</span>
+      </div>
+      <h1 class="text-4xl md:text-6xl font-bold tracking-tight mb-2 drop-shadow-md">
+        ¿Quién es tu Amigo Secreto?
+      </h1>
+      <p class="text-slate-300 max-w-xl mx-auto text-sm md:text-base">
+        Sorteos justos con restricciones, PIN privado por persona y tarjetas de Raspa y Gana para revelar los resultados.
+      </p>
+
+      <!-- Theme Selector Switcher -->
+      <div class="mt-6 flex justify-center gap-2">
+        <button onclick="setTheme('christmas')" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-800/60 hover:bg-emerald-700 text-emerald-100 border border-emerald-500/30 transition">
+          🎄 Navideño
+        </button>
+        <button onclick="setTheme('birthday')" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-purple-800/60 hover:bg-purple-700 text-purple-100 border border-purple-500/30 transition">
+          🎉 Fiesta
+        </button>
+        <button onclick="setTheme('elegant')" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-800/60 hover:bg-slate-700 text-slate-100 border border-slate-500/30 transition">
+          ✨ Elegante
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="flex justify-center mb-8">
+      <div class="glass-card p-1.5 rounded-2xl inline-flex gap-1">
+        <button id="tab-btn-1" onclick="switchTab(1)" class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all bg-white/20 text-white shadow-sm">
+          1. Participantes & Regalos
+        </button>
+        <button id="tab-btn-2" onclick="switchTab(2)" class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all text-slate-300 hover:text-white">
+          2. Sorteo & Reglas
+        </button>
+        <button id="tab-btn-3" onclick="switchTab(3)" class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all text-slate-300 hover:text-white">
+          3. Revelación Secreta
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 1: PARTICIPANTS & GIFTS -->
+    <div id="tab-1" class="space-y-6">
+      
+      <!-- Target Participants Setup Card -->
+      <div class="glass-card p-6 rounded-3xl max-w-xl mx-auto text-center">
+        <h2 class="text-xl font-bold mb-2 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-users-gear text-amber-400"></i>
+          <span>Configurar Límite de Participantes</span>
+        </h2>
+        <p class="text-xs text-slate-300 mb-4">Indica cuántas personas participarán en el intercambio en total antes de comenzar a registrarlas.</p>
+        
+        <div class="flex items-center justify-center gap-3">
+          <input type="number" id="input-target-count" min="2" max="100" value="3" class="w-32 px-4 py-2.5 rounded-xl glass-input text-center text-lg font-bold">
+          <button onclick="saveTargetCount()" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-sm transition shadow-lg">
+            Establecer Meta
+          </button>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-12 gap-6">
+        
+        <!-- Registration Form -->
+        <div class="md:col-span-5 glass-card p-6 rounded-3xl">
+          <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-user-plus text-amber-400"></i>
+            <span id="form-title">Agregar Participante</span>
+          </h2>
+          
+          <form id="participant-form" onsubmit="handleSaveParticipant(event)" class="space-y-4">
+            <input type="hidden" id="edit-id" value="">
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                Nombre Completo *
+              </label>
+              <input type="text" id="input-name" required placeholder="Ej: María García" class="w-full px-4 py-2.5 rounded-xl glass-input text-sm">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                PIN de Seguridad Secreto *
+              </label>
+              <div class="relative">
+                <input type="password" id="input-pin" required placeholder="Crea una clave personal" class="w-full px-4 py-2.5 pr-20 rounded-xl glass-input text-sm">
+                <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  <button type="button" onclick="togglePinVisibility('input-pin', 'eye-icon-1')" class="text-xs px-2 py-1 text-slate-300 hover:text-white">
+                    <i id="eye-icon-1" class="fa-solid fa-eye"></i>
+                  </button>
+                  <button type="button" onclick="generateRandomPin()" class="text-xs px-2 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-amber-300 font-medium">
+                    Sugerir
+                  </button>
+                </div>
+              </div>
+              <p class="text-xs text-slate-400 mt-1">Este PIN protegerá tu asignación para que nadie más la vea.</p>
+            </div>
+
+            <!-- Wishlist Gifts Container -->
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                  Lista de Deseos / Sugerencias
+                </label>
+                <button type="button" onclick="openGiftModal()" class="text-xs bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 px-2.5 py-1 rounded-lg border border-amber-500/30 font-medium transition flex items-center gap-1">
+                  <i class="fa-solid fa-plus"></i> Añadir Regalo
+                </button>
+              </div>
+
+              <!-- Added Gifts Preview List -->
+              <div id="gift-items-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                <p class="text-xs text-slate-400 italic py-2 text-center bg-black/20 rounded-xl">Sin regalos agregados aún.</p>
+              </div>
+            </div>
+
+            <div class="pt-2 flex gap-2">
+              <button type="submit" id="btn-submit-participant" class="flex-1 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold rounded-xl shadow-lg transition transform active:scale-95">
+                <i class="fa-solid fa-check mr-1"></i> Guardar Participante
+              </button>
+              <button type="button" id="btn-cancel-edit" onclick="resetForm()" class="hidden px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl text-slate-200 text-sm font-semibold">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Participants List -->
+        <div class="md:col-span-7 glass-card p-6 rounded-3xl flex flex-col">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold flex items-center gap-2">
+              <i class="fa-solid fa-users text-emerald-400"></i>
+              <span>Lista (<span id="participant-count">0</span> / <span id="target-count-display">3</span>)</span>
+            </h2>
+            <button onclick="clearAllData()" class="text-xs text-red-300 hover:text-red-100 bg-red-950/40 hover:bg-red-900/60 px-3 py-1.5 rounded-lg border border-red-500/20 transition">
+              <i class="fa-solid fa-trash mr-1"></i> Borrar Todo
+            </button>
+          </div>
+
+          <div id="participants-container" class="flex-1 overflow-y-auto max-h-[450px] space-y-3 pr-1">
+            <!-- Dynamic Participants Cards -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 2: DRAW & RESTRICTIONS -->
+    <div id="tab-2" class="space-y-6 hidden">
+      <div class="grid md:grid-cols-12 gap-6">
+        
+        <!-- Exclusions / Restrictions Panel -->
+        <div class="md:col-span-5 glass-card p-6 rounded-3xl">
+          <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-ban text-rose-400"></i>
+            <span>Restricciones</span>
+          </h2>
+          <p class="text-xs text-slate-300 mb-4">Configura quién NO puede regalarle a quién (parejas, familiares, etc.).</p>
+
+          <form onsubmit="handleAddRestriction(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Participante</label>
+              <select id="select-giver" required class="w-full px-4 py-2 rounded-xl glass-input text-sm">
+                <option value="" class="bg-slate-900">Seleccionar persona...</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">NO le puede regalar a:</label>
+              <select id="select-receiver" required class="w-full px-4 py-2 rounded-xl glass-input text-sm">
+                <option value="" class="bg-slate-900">Seleccionar persona prohibida...</option>
+              </select>
+            </div>
+
+            <button type="submit" class="w-full py-2.5 bg-rose-600/60 hover:bg-rose-600 text-white font-semibold rounded-xl border border-rose-500/30 transition text-sm">
+              <i class="fa-solid fa-plus mr-1"></i> Añadir Restricción
+            </button>
+          </form>
+
+          <!-- Restrictions List -->
+          <div class="mt-4 pt-4 border-t border-white/10">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Reglas Activas</h3>
+            <div id="restrictions-list" class="space-y-2 max-h-40 overflow-y-auto pr-1">
+              <!-- Dynamic restrictions -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Execute Draw Panel -->
+        <div class="md:col-span-7 glass-card p-6 rounded-3xl flex flex-col justify-between">
+          <div>
+            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+              <span>Realizar Sorteo Aleatorio</span>
+            </h2>
+            <p class="text-slate-300 text-sm mb-6">
+              El algoritmo asignará a cada persona su amigo secreto garantizando que se cumplan todas las restricciones y que nadie se auto-asigne.
+            </p>
+
+            <div class="bg-black/20 p-4 rounded-2xl border border-white/10 mb-6 space-y-2">
+              <div class="flex justify-between text-sm">
+                <span class="text-slate-400">Participantes Inscritos / Meta:</span>
+                <span class="font-bold"><span id="stat-participants">0</span> / <span id="stat-target-participants">3</span></span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-slate-400">Restricciones Activas:</span>
+                <span id="stat-restrictions" class="font-bold">0</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-slate-400">Estado del Sorteo:</span>
+                <span id="stat-draw-status" class="font-bold text-amber-400">Pendiente</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center space-y-3">
+            <button id="btn-execute-draw" onclick="executeDraw()" disabled class="w-full py-4 bg-gradient-to-r from-slate-600 to-slate-700 text-slate-400 font-extrabold text-lg rounded-2xl shadow-xl cursor-not-allowed transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-lock"></i> Faltan participantes para sortear
+            </button>
+            <p id="draw-warning-msg" class="text-xs text-rose-300">Debes completar el registro de todos los participantes antes de poder sortear.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 3: SECRET REVEAL (SCRATCH CARD ONLY) -->
+    <div id="tab-3" class="space-y-6 hidden">
+      <div class="max-w-xl mx-auto glass-card p-6 md:p-8 rounded-3xl text-center">
+        
+        <h2 class="text-3xl font-bold mb-2">Consulta Tu Amigo Secreto</h2>
+        <p class="text-slate-300 text-sm mb-6">Selecciona tu nombre e ingresa tu PIN personal para desbloquear la tarjeta de Raspa y Gana.</p>
+
+        <!-- PIN Verification Form -->
+        <div id="pin-login-box" class="space-y-4 max-w-sm mx-auto">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1 text-left">¿Quién eres?</label>
+            <select id="select-secret-user" class="w-full px-4 py-3 rounded-xl glass-input text-base font-medium">
+              <option value="" class="bg-slate-900">Selecciona tu nombre...</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1 text-left">Ingresa tu PIN Secreto</label>
+            <div class="relative">
+              <input type="password" id="input-secret-pin" placeholder="••••" class="w-full px-4 py-3 rounded-xl glass-input text-center text-xl font-bold tracking-widest">
+              <button type="button" onclick="togglePinVisibility('input-secret-pin', 'eye-icon-2')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-white">
+                <i id="eye-icon-2" class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <button onclick="unlockSecretResult()" class="w-full py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-bold rounded-xl shadow-lg transition">
+             Desbloquear Mi Resultado
+          </button>
+        </div>
+
+        <!-- SCRATCH CARD DISPLAY AREA (hidden until unlocked) -->
+        <div id="scratch-display-area" class="hidden mt-6 space-y-6">
+          <div class="bg-white/10 p-4 rounded-2xl border border-white/20">
+            <p class="text-xs font-semibold text-amber-300 uppercase tracking-widest mb-1">¡Acceso Concedido!</p>
+            <p class="text-sm text-slate-200">Usa tu dedo o ratón para raspar la tarjeta dorada y descubrir a quién le vas a regalar.</p>
+          </div>
+
+          <!-- Scratch Canvas Wrapper -->
+          <div id="scratch-container" class="mx-auto w-[300px] h-[180px] rounded-2xl shadow-2xl overflow-hidden relative">
+            <!-- Hidden Result Layer underneath -->
+            <div id="scratch-secret-content" class="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 p-4 flex flex-col items-center justify-center text-center border-2 border-amber-400/40 rounded-2xl">
+              <span class="text-xs uppercase text-amber-300 font-bold tracking-widest mb-1">Te tocó regalarle a:</span>
+              <h3 id="target-person-name" class="text-3xl font-extrabold text-white mb-1">---</h3>
+              <p class="text-xs text-slate-300">¡Guarda el secreto!</p>
+            </div>
+
+            <!-- Canvas scratch layer -->
+            <canvas id="scratch-canvas" width="300" height="180"></canvas>
+          </div>
+
+          <!-- Target Wishlist Gifts Section -->
+          <div id="target-wishlist-box" class="hidden text-left bg-black/30 p-5 rounded-2xl border border-white/10">
+            <h4 class="font-bold text-amber-300 text-base mb-3 flex items-center gap-2">

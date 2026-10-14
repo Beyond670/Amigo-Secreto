@@ -101,7 +101,7 @@
         ¿Quién es tu Amigo Secreto?
       </h1>
       <p class="text-slate-300 max-w-xl mx-auto text-sm md:text-base">
-        Sorteos justos con restricciones, PIN privado por persona y tarjetas de Raspa y Gana para revelar los resultados.
+        Inicia sesión o regístrate para gestionar tus regalos y revelar tu asignación.
       </p>
 
       <!-- Theme Selector Switcher -->
@@ -118,276 +118,322 @@
       </div>
     </header>
 
-    <!-- Navigation Tabs -->
-    <div class="flex justify-center mb-8">
-      <div class="glass-card p-1.5 rounded-2xl inline-flex gap-1">
-        <button id="tab-btn-1" onclick="switchTab(1)" class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all bg-white/20 text-white shadow-sm">
-          1. Participantes & Regalos
+    <!-- LOGIN / REGISTER SCREEN (Shown if no session active) -->
+    <div id="login-section" class="max-w-md mx-auto glass-card p-6 md:p-8 rounded-3xl space-y-6">
+      
+      <!-- Mode Tabs (Login vs Register) -->
+      <div class="flex rounded-xl bg-black/30 p-1">
+        <button id="auth-tab-login" onclick="switchAuthMode('login')" class="flex-1 py-2 rounded-lg text-xs font-bold transition bg-white/20 text-white">
+          Iniciar Sesión
         </button>
-        <button id="tab-btn-2" onclick="switchTab(2)" class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all text-slate-300 hover:text-white">
-          2. Sorteo & Reglas
-        </button>
-        <button id="tab-btn-3" onclick="switchTab(3)" class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all text-slate-300 hover:text-white">
-          3. Revelación Secreta
+        <button id="auth-tab-register" onclick="switchAuthMode('register')" class="flex-1 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white">
+          Registrarse
         </button>
       </div>
+
+      <!-- LOGIN FORM -->
+      <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4 text-left">
+        <h2 class="text-xl font-bold flex items-center gap-2 mb-2">
+          <i class="fa-solid fa-user-lock text-amber-400"></i>
+          <span>Entrar a mi Cuenta</span>
+        </h2>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+            Tu Nombre / Usuario
+          </label>
+          <select id="login-select-user" required class="w-full px-4 py-3 rounded-xl glass-input text-base font-medium">
+            <option value="" class="bg-slate-900">Selecciona tu nombre...</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+            Tu PIN Secreto
+          </label>
+          <div class="relative">
+            <input type="password" id="login-input-pin" required placeholder="••••" class="w-full px-4 py-3 rounded-xl glass-input text-center text-xl font-bold tracking-widest">
+            <button type="button" onclick="togglePinVisibility('login-input-pin', 'eye-icon-login')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-white">
+              <i id="eye-icon-login" class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-bold rounded-xl shadow-lg transition">
+          <i class="fa-solid fa-right-to-bracket mr-1"></i> Entrar
+        </button>
+      </form>
+
+      <!-- PUBLIC REGISTRATION FORM -->
+      <form id="form-register" onsubmit="handlePublicRegister(event)" class="space-y-4 text-left hidden">
+        <h2 class="text-xl font-bold flex items-center gap-2 mb-2">
+          <i class="fa-solid fa-user-plus text-emerald-400"></i>
+          <span>Crear mi Participación</span>
+        </h2>
+        <p class="text-xs text-slate-300">Regístrate para unirte al intercambio (Cupos: <span id="reg-current-count">0</span> / <span id="reg-target-count">3</span>).</p>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+            Tu Nombre Completo *
+          </label>
+          <input type="text" id="reg-input-name" required placeholder="Ej: Carlos Pérez" class="w-full px-4 py-2.5 rounded-xl glass-input text-sm">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+            Crea tu PIN Secreto *
+          </label>
+          <div class="relative">
+            <input type="password" id="reg-input-pin" required placeholder="4 dígitos" class="w-full px-4 py-2.5 pr-20 rounded-xl glass-input text-sm">
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              <button type="button" onclick="togglePinVisibility('reg-input-pin', 'eye-icon-reg')" class="text-xs px-2 py-1 text-slate-300 hover:text-white">
+                <i id="eye-icon-reg" class="fa-solid fa-eye"></i>
+              </button>
+              <button type="button" onclick="generatePublicPin()" class="text-xs px-2 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-amber-300 font-medium">
+                Sugerir
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-public-register" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-slate-950 font-bold rounded-xl shadow-lg transition">
+          <i class="fa-solid fa-user-plus mr-1"></i> Registrarme Ahora
+        </button>
+      </form>
+
     </div>
 
-    <!-- TAB 1: PARTICIPANTS & GIFTS -->
-    <div id="tab-1" class="space-y-6">
+    <!-- MAIN APP DASHBOARD (Hidden until login) -->
+    <div id="app-dashboard" class="hidden space-y-6">
       
-      <!-- Target Participants Setup Card -->
-      <div class="glass-card p-6 rounded-3xl max-w-xl mx-auto text-center">
-        <h2 class="text-xl font-bold mb-2 flex items-center justify-center gap-2">
-          <i class="fa-solid fa-users-gear text-amber-400"></i>
-          <span>Configurar Límite de Participantes</span>
-        </h2>
-        <p class="text-xs text-slate-300 mb-4">Indica cuántas personas participarán en el intercambio en total antes de comenzar a registrarlas.</p>
-        
-        <div class="flex items-center justify-center gap-3">
-          <input type="number" id="input-target-count" min="2" max="100" value="3" class="w-32 px-4 py-2.5 rounded-xl glass-input text-center text-lg font-bold">
-          <button onclick="saveTargetCount()" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-sm transition shadow-lg">
-            Establecer Meta
+      <!-- Top User Bar -->
+      <div class="glass-card p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold text-lg">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 id="logged-user-name" class="font-bold text-white text-base">---</h3>
+              <span id="admin-badge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                ADMIN
+              </span>
+            </div>
+            <p class="text-xs text-slate-300">Sesión Activa</p>
+          </div>
+        </div>
+
+        <button onclick="handleLogout()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-600 transition">
+          <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Salir / Bloquear
+        </button>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex justify-center">
+        <div class="glass-card p-1.5 rounded-2xl inline-flex gap-1 flex-wrap justify-center">
+          <button id="tab-btn-my-gifts" onclick="switchDashboardTab('my-gifts')" class="px-4 py-2 rounded-xl font-semibold text-sm transition-all bg-white/20 text-white shadow-sm">
+            <i class="fa-solid fa-gift mr-1"></i> Mis Regalos Deseados
+          </button>
+          <button id="tab-btn-secret" onclick="switchDashboardTab('secret')" class="px-4 py-2 rounded-xl font-semibold text-sm transition-all text-slate-300 hover:text-white">
+            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Mi Amigo Secreto
+          </button>
+          <button id="tab-btn-admin" onclick="switchDashboardTab('admin')" class="hidden px-4 py-2 rounded-xl font-semibold text-sm transition-all text-slate-300 hover:text-white">
+            <i class="fa-solid fa-gears mr-1"></i> Panel de Admin (Chris)
           </button>
         </div>
       </div>
 
-      <div class="grid md:grid-cols-12 gap-6">
-        
-        <!-- Registration Form -->
-        <div class="md:col-span-5 glass-card p-6 rounded-3xl">
-          <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
-            <i class="fa-solid fa-user-plus text-amber-400"></i>
-            <span id="form-title">Agregar Participante</span>
-          </h2>
-          
-          <form id="participant-form" onsubmit="handleSaveParticipant(event)" class="space-y-4">
-            <input type="hidden" id="edit-id" value="">
-
+      <!-- TAB 1: MY GIFTS (For all logged in users) -->
+      <div id="dash-tab-my-gifts" class="space-y-6">
+        <div class="glass-card p-6 md:p-8 rounded-3xl max-w-2xl mx-auto space-y-6">
+          <div class="flex justify-between items-center border-b border-white/10 pb-4">
             <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                Nombre Completo *
-              </label>
-              <input type="text" id="input-name" required placeholder="Ej: María García" class="w-full px-4 py-2.5 rounded-xl glass-input text-sm">
+              <h2 class="text-2xl font-bold flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-amber-400"></i>
+                <span>Mi Lista de Deseos</span>
+              </h2>
+              <p class="text-xs text-slate-300 mt-0.5">Agrega las sugerencias o ideas de regalos que te gustaría recibir.</p>
+            </div>
+            <button onclick="openGiftModal()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow-lg transition flex items-center gap-1">
+              <i class="fa-solid fa-plus"></i> Añadir Regalo
+            </button>
+          </div>
+
+          <!-- User's Gift List Cards -->
+          <div id="my-gifts-container" class="space-y-3">
+            <!-- Dynamic gifts list -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: MY SECRET SANTA (Scratch Card) -->
+      <div id="dash-tab-secret" class="hidden space-y-6">
+        <div class="glass-card p-6 md:p-8 rounded-3xl max-w-xl mx-auto text-center space-y-6">
+          
+          <div>
+            <h2 class="text-3xl font-bold mb-1">Tu Amigo Secreto</h2>
+            <p class="text-slate-300 text-sm">Raspa la tarjeta dorada a continuación para descubrir a quién te tocó regalarle.</p>
+          </div>
+
+          <div id="scratch-not-drawn-msg" class="hidden bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl text-amber-200 text-sm">
+            <i class="fa-solid fa-hourglass-half text-lg mb-1 block"></i>
+            El sorteo aún no ha sido realizado por el administrador. ¡Regresa pronto!
+          </div>
+
+          <div id="scratch-active-area" class="space-y-6">
+            <!-- Scratch Canvas Container -->
+            <div id="scratch-container" class="mx-auto w-[300px] h-[180px] rounded-2xl shadow-2xl overflow-hidden relative">
+              <!-- Hidden Result Layer underneath -->
+              <div id="scratch-secret-content" class="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 p-4 flex flex-col items-center justify-center text-center border-2 border-amber-400/40 rounded-2xl">
+                <span class="text-xs uppercase text-amber-300 font-bold tracking-widest mb-1">Te tocó regalarle a:</span>
+                <h3 id="target-person-name" class="text-3xl font-extrabold text-white mb-1">---</h3>
+                <p class="text-xs text-slate-300">¡Guarda el secreto!</p>
+              </div>
+
+              <!-- Canvas scratch layer -->
+              <canvas id="scratch-canvas" width="300" height="180"></canvas>
             </div>
 
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                PIN de Seguridad Secreto *
-              </label>
-              <div class="relative">
-                <input type="password" id="input-pin" required placeholder="Crea una clave personal" class="w-full px-4 py-2.5 pr-20 rounded-xl glass-input text-sm">
-                <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                  <button type="button" onclick="togglePinVisibility('input-pin', 'eye-icon-1')" class="text-xs px-2 py-1 text-slate-300 hover:text-white">
-                    <i id="eye-icon-1" class="fa-solid fa-eye"></i>
-                  </button>
-                  <button type="button" onclick="generateRandomPin()" class="text-xs px-2 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-amber-300 font-medium">
-                    Sugerir
-                  </button>
+            <!-- Target Wishlist Gifts Section -->
+            <div id="target-wishlist-box" class="hidden text-left bg-black/30 p-5 rounded-2xl border border-white/10">
+              <h4 class="font-bold text-amber-300 text-base mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-gift"></i> Lista de Deseos de <span id="target-wishlist-owner">---</span>
+              </h4>
+              <div id="target-wishlist-grid" class="grid grid-cols-1 gap-3">
+                <!-- Target gifts cards -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TAB 3: ADMIN PANEL (Chris only) -->
+      <div id="dash-tab-admin" class="hidden space-y-6">
+        
+        <!-- Target Participants Setup Card -->
+        <div class="glass-card p-6 rounded-3xl max-w-xl mx-auto text-center">
+          <h2 class="text-xl font-bold mb-2 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-users-gear text-amber-400"></i>
+            <span>Configurar Límite de Participantes</span>
+          </h2>
+          <p class="text-xs text-slate-300 mb-4">Indica cuántas personas participarán en el intercambio en total.</p>
+          
+          <div class="flex items-center justify-center gap-3">
+            <input type="number" id="input-target-count" min="2" max="100" value="3" class="w-32 px-4 py-2.5 rounded-xl glass-input text-center text-lg font-bold">
+            <button onclick="saveTargetCount()" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-sm transition shadow-lg">
+              Establecer Meta
+            </button>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-12 gap-6">
+          
+          <!-- Registration Form (Admin) -->
+          <div class="md:col-span-5 glass-card p-6 rounded-3xl">
+            <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-user-plus text-amber-400"></i>
+              <span id="form-title">Agregar Participante</span>
+            </h2>
+            
+            <form id="participant-form" onsubmit="handleSaveParticipant(event)" class="space-y-4">
+              <input type="hidden" id="edit-id" value="">
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  Nombre Completo *
+                </label>
+                <input type="text" id="input-name" required placeholder="Ej: María García" class="w-full px-4 py-2.5 rounded-xl glass-input text-sm">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  PIN de Seguridad Secreto *
+                </label>
+                <div class="relative">
+                  <input type="password" id="input-pin" required placeholder="Crea una clave personal" class="w-full px-4 py-2.5 pr-20 rounded-xl glass-input text-sm">
+                  <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    <button type="button" onclick="togglePinVisibility('input-pin', 'eye-icon-1')" class="text-xs px-2 py-1 text-slate-300 hover:text-white">
+                      <i id="eye-icon-1" class="fa-solid fa-eye"></i>
+                    </button>
+                    <button type="button" onclick="generateRandomPin()" class="text-xs px-2 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-amber-300 font-medium">
+                      Sugerir
+                    </button>
+                  </div>
                 </div>
               </div>
-              <p class="text-xs text-slate-400 mt-1">Este PIN protegerá tu asignación para que nadie más la vea.</p>
-            </div>
 
-            <!-- Wishlist Gifts Container -->
-            <div>
-              <div class="flex justify-between items-center mb-2">
-                <label class="text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                  Lista de Deseos / Sugerencias
-                </label>
-                <button type="button" onclick="openGiftModal()" class="text-xs bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 px-2.5 py-1 rounded-lg border border-amber-500/30 font-medium transition flex items-center gap-1">
-                  <i class="fa-solid fa-plus"></i> Añadir Regalo
+              <div class="pt-2 flex gap-2">
+                <button type="submit" id="btn-submit-participant" class="flex-1 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold rounded-xl shadow-lg transition transform active:scale-95">
+                  <i class="fa-solid fa-check mr-1"></i> Guardar Participante
+                </button>
+                <button type="button" id="btn-cancel-edit" onclick="resetForm()" class="hidden px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl text-slate-200 text-sm font-semibold">
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Participants List & Restrictions -->
+          <div class="md:col-span-7 space-y-6">
+            
+            <div class="glass-card p-6 rounded-3xl flex flex-col">
+              <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold flex items-center gap-2">
+                  <i class="fa-solid fa-users text-emerald-400"></i>
+                  <span>Lista (<span id="participant-count">0</span> / <span id="target-count-display">3</span>)</span>
+                </h2>
+                <button onclick="clearAllData()" class="text-xs text-red-300 hover:text-red-100 bg-red-950/40 hover:bg-red-900/60 px-3 py-1.5 rounded-lg border border-red-500/20 transition">
+                  <i class="fa-solid fa-trash mr-1"></i> Borrar Todo
                 </button>
               </div>
 
-              <!-- Added Gifts Preview List -->
-              <div id="gift-items-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                <p class="text-xs text-slate-400 italic py-2 text-center bg-black/20 rounded-xl">Sin regalos agregados aún.</p>
+              <div id="participants-container" class="space-y-3 max-h-60 overflow-y-auto pr-1">
+                <!-- Dynamic Participants Cards -->
               </div>
             </div>
 
-            <div class="pt-2 flex gap-2">
-              <button type="submit" id="btn-submit-participant" class="flex-1 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold rounded-xl shadow-lg transition transform active:scale-95">
-                <i class="fa-solid fa-check mr-1"></i> Guardar Participante
+            <!-- Draw Execution Panel -->
+            <div class="glass-card p-6 rounded-3xl space-y-4">
+              <h2 class="text-2xl font-bold flex items-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+                <span>Sorteo y Restricciones</span>
+              </h2>
+
+              <!-- Add Restriction Form -->
+              <form onsubmit="handleAddRestriction(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <select id="select-giver" required class="px-3 py-2 rounded-xl glass-input text-xs">
+                  <option value="" class="bg-slate-900">Persona...</option>
+                </select>
+                <select id="select-receiver" required class="px-3 py-2 rounded-xl glass-input text-xs">
+                  <option value="" class="bg-slate-900">NO regala a...</option>
+                </select>
+                <button type="submit" class="sm:col-span-2 py-2 bg-rose-600/60 hover:bg-rose-600 text-white font-semibold rounded-xl text-xs transition">
+                  <i class="fa-solid fa-plus mr-1"></i> Añadir Exclusión
+                </button>
+              </form>
+
+              <!-- Active Restrictions List -->
+              <div id="restrictions-list" class="space-y-1 max-h-28 overflow-y-auto pr-1 text-xs">
+                <!-- Dynamic restrictions -->
+              </div>
+
+              <button id="btn-execute-draw" onclick="executeDraw()" disabled class="w-full py-3.5 bg-gradient-to-r from-slate-600 to-slate-700 text-slate-400 font-extrabold text-base rounded-2xl shadow-xl cursor-not-allowed transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-lock"></i> Faltan participantes para sortear
               </button>
-              <button type="button" id="btn-cancel-edit" onclick="resetForm()" class="hidden px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl text-slate-200 text-sm font-semibold">
-                Cancelar
-              </button>
+              <p id="draw-warning-msg" class="text-xs text-rose-300 text-center">Debes completar el registro de todos los participantes antes de poder sortear.</p>
             </div>
-          </form>
-        </div>
 
-        <!-- Participants List -->
-        <div class="md:col-span-7 glass-card p-6 rounded-3xl flex flex-col">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold flex items-center gap-2">
-              <i class="fa-solid fa-users text-emerald-400"></i>
-              <span>Lista (<span id="participant-count">0</span> / <span id="target-count-display">3</span>)</span>
-            </h2>
-            <button onclick="clearAllData()" class="text-xs text-red-300 hover:text-red-100 bg-red-950/40 hover:bg-red-900/60 px-3 py-1.5 rounded-lg border border-red-500/20 transition">
-              <i class="fa-solid fa-trash mr-1"></i> Borrar Todo
-            </button>
           </div>
 
-          <div id="participants-container" class="flex-1 overflow-y-auto max-h-[450px] space-y-3 pr-1">
-            <!-- Dynamic Participants Cards -->
-          </div>
         </div>
-
       </div>
-    </div>
 
-    <!-- TAB 2: DRAW & RESTRICTIONS -->
-    <div id="tab-2" class="space-y-6 hidden">
-      <div class="grid md:grid-cols-12 gap-6">
-        
-        <!-- Exclusions / Restrictions Panel -->
-        <div class="md:col-span-5 glass-card p-6 rounded-3xl">
-          <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
-            <i class="fa-solid fa-ban text-rose-400"></i>
-            <span>Restricciones</span>
-          </h2>
-          <p class="text-xs text-slate-300 mb-4">Configura quién NO puede regalarle a quién (parejas, familiares, etc.).</p>
-
-          <form onsubmit="handleAddRestriction(event)" class="space-y-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Participante</label>
-              <select id="select-giver" required class="w-full px-4 py-2 rounded-xl glass-input text-sm">
-                <option value="" class="bg-slate-900">Seleccionar persona...</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">NO le puede regalar a:</label>
-              <select id="select-receiver" required class="w-full px-4 py-2 rounded-xl glass-input text-sm">
-                <option value="" class="bg-slate-900">Seleccionar persona prohibida...</option>
-              </select>
-            </div>
-
-            <button type="submit" class="w-full py-2.5 bg-rose-600/60 hover:bg-rose-600 text-white font-semibold rounded-xl border border-rose-500/30 transition text-sm">
-              <i class="fa-solid fa-plus mr-1"></i> Añadir Restricción
-            </button>
-          </form>
-
-          <!-- Restrictions List -->
-          <div class="mt-4 pt-4 border-t border-white/10">
-            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Reglas Activas</h3>
-            <div id="restrictions-list" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-              <!-- Dynamic restrictions -->
-            </div>
-          </div>
-        </div>
-
-        <!-- Execute Draw Panel -->
-        <div class="md:col-span-7 glass-card p-6 rounded-3xl flex flex-col justify-between">
-          <div>
-            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
-              <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
-              <span>Realizar Sorteo Aleatorio</span>
-            </h2>
-            <p class="text-slate-300 text-sm mb-6">
-              El algoritmo asignará a cada persona su amigo secreto garantizando que se cumplan todas las restricciones y que nadie se auto-asigne.
-            </p>
-
-            <div class="bg-black/20 p-4 rounded-2xl border border-white/10 mb-6 space-y-2">
-              <div class="flex justify-between text-sm">
-                <span class="text-slate-400">Participantes Inscritos / Meta:</span>
-                <span class="font-bold"><span id="stat-participants">0</span> / <span id="stat-target-participants">3</span></span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-slate-400">Restricciones Activas:</span>
-                <span id="stat-restrictions" class="font-bold">0</span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-slate-400">Estado del Sorteo:</span>
-                <span id="stat-draw-status" class="font-bold text-amber-400">Pendiente</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="text-center space-y-3">
-            <button id="btn-execute-draw" onclick="executeDraw()" disabled class="w-full py-4 bg-gradient-to-r from-slate-600 to-slate-700 text-slate-400 font-extrabold text-lg rounded-2xl shadow-xl cursor-not-allowed transition flex items-center justify-center gap-2">
-              <i class="fa-solid fa-lock"></i> Faltan participantes para sortear
-            </button>
-            <p id="draw-warning-msg" class="text-xs text-rose-300">Debes completar el registro de todos los participantes antes de poder sortear.</p>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- TAB 3: SECRET REVEAL (SCRATCH CARD ONLY) -->
-    <div id="tab-3" class="space-y-6 hidden">
-      <div class="max-w-xl mx-auto glass-card p-6 md:p-8 rounded-3xl text-center">
-        
-        <h2 class="text-3xl font-bold mb-2">Consulta Tu Amigo Secreto</h2>
-        <p class="text-slate-300 text-sm mb-6">Selecciona tu nombre e ingresa tu PIN personal para desbloquear la tarjeta de Raspa y Gana.</p>
-
-        <!-- PIN Verification Form -->
-        <div id="pin-login-box" class="space-y-4 max-w-sm mx-auto">
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1 text-left">¿Quién eres?</label>
-            <select id="select-secret-user" class="w-full px-4 py-3 rounded-xl glass-input text-base font-medium">
-              <option value="" class="bg-slate-900">Selecciona tu nombre...</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1 text-left">Ingresa tu PIN Secreto</label>
-            <div class="relative">
-              <input type="password" id="input-secret-pin" placeholder="••••" class="w-full px-4 py-3 rounded-xl glass-input text-center text-xl font-bold tracking-widest">
-              <button type="button" onclick="togglePinVisibility('input-secret-pin', 'eye-icon-2')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-white">
-                <i id="eye-icon-2" class="fa-solid fa-eye"></i>
-              </button>
-            </div>
-          </div>
-
-          <button onclick="unlockSecretResult()" class="w-full py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-bold rounded-xl shadow-lg transition">
-             Desbloquear Mi Resultado
-          </button>
-        </div>
-
-        <!-- SCRATCH CARD DISPLAY AREA (hidden until unlocked) -->
-        <div id="scratch-display-area" class="hidden mt-6 space-y-6">
-          <div class="bg-white/10 p-4 rounded-2xl border border-white/20">
-            <p class="text-xs font-semibold text-amber-300 uppercase tracking-widest mb-1">¡Acceso Concedido!</p>
-            <p class="text-sm text-slate-200">Usa tu dedo o ratón para raspar la tarjeta dorada y descubrir a quién le vas a regalar.</p>
-          </div>
-
-          <!-- Scratch Canvas Wrapper -->
-          <div id="scratch-container" class="mx-auto w-[300px] h-[180px] rounded-2xl shadow-2xl overflow-hidden relative">
-            <!-- Hidden Result Layer underneath -->
-            <div id="scratch-secret-content" class="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 p-4 flex flex-col items-center justify-center text-center border-2 border-amber-400/40 rounded-2xl">
-              <span class="text-xs uppercase text-amber-300 font-bold tracking-widest mb-1">Te tocó regalarle a:</span>
-              <h3 id="target-person-name" class="text-3xl font-extrabold text-white mb-1">---</h3>
-              <p class="text-xs text-slate-300">¡Guarda el secreto!</p>
-            </div>
-
-            <!-- Canvas scratch layer -->
-            <canvas id="scratch-canvas" width="300" height="180"></canvas>
-          </div>
-
-          <!-- Target Wishlist Gifts Section -->
-          <div id="target-wishlist-box" class="hidden text-left bg-black/30 p-5 rounded-2xl border border-white/10">
-            <h4 class="font-bold text-amber-300 text-base mb-3 flex items-center gap-2">
-              <i class="fa-solid fa-gift"></i> Lista de Deseos de <span id="target-wishlist-owner">---</span>
-            </h4>
-            <div id="target-wishlist-grid" class="grid grid-cols-1 gap-3">
-              <!-- Target gifts cards -->
-            </div>
-          </div>
-
-          <button onclick="lockRevealCard()" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-semibold text-sm border border-slate-600 transition">
-            <i class="fa-solid fa-lock mr-1"></i> Ocultar y Salir
-          </button>
-        </div>
-
-      </div>
     </div>
 
   </div>
 
-  <!-- MODAL: ADD GIFT ITEM -->
+  <!-- MODAL: ADD/EDIT GIFT ITEM -->
   <div id="gift-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="glass-card max-w-md w-full p-6 rounded-3xl space-y-4 border border-white/20">
       <div class="flex justify-between items-center">
@@ -430,7 +476,7 @@
 
         <div class="pt-2 flex gap-2">
           <button type="submit" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-sm transition">
-            Agregar a la Lista
+            Guardar en Mi Lista
           </button>
           <button type="button" onclick="closeGiftModal()" class="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-semibold">
             Cancelar
@@ -445,25 +491,25 @@
     let state = {
       theme: 'christmas',
       targetCount: 3,
-      participants: [],
+      participants: [
+        { id: 'p_admin', name: 'Chris', pin: '0607', gifts: [] }
+      ],
       restrictions: [],
-      assignments: {}, // giverId -> receiverId
+      assignments: {},
       isDrawn: false
     };
 
-    // Temporary list of gifts while adding/editing a participant
-    let currentTempGifts = [];
+    let currentUser = null;
     let currentGiftImageData = "";
 
     // INITIALIZATION
     window.addEventListener('DOMContentLoaded', () => {
       loadFromStorage();
-      document.getElementById('input-target-count').value = state.targetCount;
-      renderAll();
+      ensureAdminUser();
+      renderLoginDropdown();
       initParticles();
     });
 
-    // LOCAL STORAGE
     function saveToStorage() {
       localStorage.setItem('gift_exchange_data', JSON.stringify(state));
     }
@@ -479,12 +525,159 @@
       }
     }
 
+    function ensureAdminUser() {
+      let admin = state.participants.find(p => p.name.toLowerCase() === 'chris');
+      if (!admin) {
+        admin = { id: 'p_admin', name: 'Chris', pin: '0607', gifts: [] };
+        state.participants.unshift(admin);
+        saveToStorage();
+      } else {
+        admin.pin = '0607';
+      }
+    }
+
     function clearAllData() {
-      if (confirm("¿Estás seguro de que deseas borrar todos los participantes, reglas y el sorteo?")) {
-        state = { theme: state.theme, targetCount: state.targetCount, participants: [], restrictions: [], assignments: {}, isDrawn: false };
-        currentTempGifts = [];
+      if (confirm("¿Estás seguro de que deseas borrar todos los participantes (excepto Chris), reglas y el sorteo?")) {
+        state.participants = [{ id: 'p_admin', name: 'Chris', pin: '0607', gifts: [] }];
+        state.restrictions = [];
+        state.assignments = {};
+        state.isDrawn = false;
         saveToStorage();
         renderAll();
+      }
+    }
+
+    // AUTH & MODES
+    function switchAuthMode(mode) {
+      const tabLogin = document.getElementById('auth-tab-login');
+      const tabRegister = document.getElementById('auth-tab-register');
+      const formLogin = document.getElementById('form-login');
+      const formRegister = document.getElementById('form-register');
+
+      if (mode === 'login') {
+        tabLogin.className = "flex-1 py-2 rounded-lg text-xs font-bold transition bg-white/20 text-white";
+        tabRegister.className = "flex-1 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white";
+        formLogin.classList.remove('hidden');
+        formRegister.classList.add('hidden');
+      } else {
+        tabRegister.className = "flex-1 py-2 rounded-lg text-xs font-bold transition bg-white/20 text-white";
+        tabLogin.className = "flex-1 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white";
+        formRegister.classList.remove('hidden');
+        formLogin.classList.add('hidden');
+        document.getElementById('reg-current-count').textContent = state.participants.length;
+        document.getElementById('reg-target-count').textContent = state.targetCount;
+      }
+    }
+
+    function generatePublicPin() {
+      const pin = Math.floor(1000 + Math.random() * 9000).toString();
+      document.getElementById('reg-input-pin').value = pin;
+    }
+
+    function handlePublicRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-input-name').value.trim();
+      const pin = document.getElementById('reg-input-pin').value.trim();
+
+      if (!name || !pin) return;
+
+      if (state.participants.length >= state.targetCount) {
+        alert(`Lo sentimos, ya se ha alcanzado el límite de ${state.targetCount} participantes configurado por el administrador.`);
+        return;
+      }
+
+      const exists = state.participants.some(p => p.name.toLowerCase() === name.toLowerCase());
+      if (exists) {
+        alert("Ya existe un participante registrado con este nombre. Por favor usa un apellido o un nombre diferente.");
+        return;
+      }
+
+      const newParticipant = {
+        id: 'p_' + Date.now(),
+        name: name,
+        pin: pin,
+        gifts: []
+      };
+
+      state.participants.push(newParticipant);
+      saveToStorage();
+
+      alert(`¡Registro exitoso, ${name}! Ahora puedes iniciar sesión con tu nombre y PIN.`);
+      document.getElementById('reg-input-name').value = '';
+      document.getElementById('reg-input-pin').value = '';
+      renderLoginDropdown();
+      switchAuthMode('login');
+    }
+
+    function renderLoginDropdown() {
+      const select = document.getElementById('login-select-user');
+      select.innerHTML = `<option value="" class="bg-slate-900">Selecciona tu nombre...</option>` +
+        state.participants.map(p => `<option value="${p.id}" class="bg-slate-900">${p.name}</option>`).join('');
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const userId = document.getElementById('login-select-user').value;
+      const pin = document.getElementById('login-input-pin').value.trim();
+
+      const user = state.participants.find(p => p.id === userId);
+      if (!user || user.pin !== pin) {
+        alert("PIN o usuario incorrecto. Intenta de nuevo.");
+        return;
+      }
+
+      currentUser = user;
+      document.getElementById('logged-user-name').textContent = user.name;
+      document.getElementById('login-input-pin').value = '';
+
+      const isAdmin = user.name.toLowerCase() === 'chris' && user.pin === '0607';
+      const adminBadge = document.getElementById('admin-badge');
+      const adminTabBtn = document.getElementById('tab-btn-admin');
+
+      if (isAdmin) {
+        adminBadge.classList.remove('hidden');
+        adminTabBtn.classList.remove('hidden');
+      } else {
+        adminBadge.classList.add('hidden');
+        adminTabBtn.classList.add('hidden');
+      }
+
+      document.getElementById('login-section').classList.add('hidden');
+      document.getElementById('app-dashboard').classList.remove('hidden');
+
+      renderAll();
+      switchDashboardTab('my-gifts');
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      document.getElementById('app-dashboard').classList.add('hidden');
+      document.getElementById('login-section').classList.remove('hidden');
+      renderLoginDropdown();
+      switchAuthMode('login');
+    }
+
+    function switchDashboardTab(tabName) {
+      ['my-gifts', 'secret', 'admin'].forEach(name => {
+        const el = document.getElementById(`dash-tab-${name}`);
+        const btn = document.getElementById(`tab-btn-${name}`);
+        if (el) el.classList.add('hidden');
+        if (btn) {
+          btn.classList.remove('bg-white/20', 'text-white', 'shadow-sm');
+          btn.classList.add('text-slate-300');
+        }
+      });
+
+      const activeEl = document.getElementById(`dash-tab-${tabName}`);
+      const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+      if (activeEl) activeEl.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.add('bg-white/20', 'text-white', 'shadow-sm');
+        activeBtn.classList.remove('text-slate-300');
+      }
+
+      if (tabName === 'secret') {
+        renderScratchArea();
       }
     }
 
@@ -502,6 +695,7 @@
           return;
         }
         state.participants = state.participants.slice(0, val);
+        ensureAdminUser();
         state.restrictions = state.restrictions.filter(r => {
           const gExists = state.participants.some(p => p.id === r.giverId);
           const rExists = state.participants.some(p => p.id === r.receiverId);
@@ -517,7 +711,6 @@
       alert(`Meta establecida a ${val} participantes.`);
     }
 
-    // THEME SWITCHER
     function setTheme(themeName) {
       state.theme = themeName;
       document.body.className = `theme-${themeName} min-h-screen pb-12 transition-all`;
@@ -525,26 +718,6 @@
       initParticles();
     }
 
-    // TAB SWITCHING
-    function switchTab(tabNum) {
-      [1, 2, 3].forEach(n => {
-        document.getElementById(`tab-${n}`).classList.add('hidden');
-        const btn = document.getElementById(`tab-btn-${n}`);
-        btn.classList.remove('bg-white/20', 'text-white', 'shadow-sm');
-        btn.classList.add('text-slate-300');
-      });
-
-      document.getElementById(`tab-${tabNum}`).classList.remove('hidden');
-      const activeBtn = document.getElementById(`tab-btn-${tabNum}`);
-      activeBtn.classList.add('bg-white/20', 'text-white', 'shadow-sm');
-      activeBtn.classList.remove('text-slate-300');
-
-      if (tabNum === 3) {
-        lockRevealCard(); // Reset reveal view when entering tab 3
-      }
-    }
-
-    // PARTICIPANT & GIFTS MANAGEMENT
     function generateRandomPin() {
       const pin = Math.floor(1000 + Math.random() * 9000).toString();
       document.getElementById('input-pin').value = pin;
@@ -573,26 +746,22 @@
       if (!name || !pin) return;
 
       if (editId) {
-        // Edit existing
         const p = state.participants.find(item => item.id === editId);
         if (p) {
           p.name = name;
           p.pin = pin;
-          p.gifts = [...currentTempGifts];
         }
       } else {
-        // Check if limit reached
         if (state.participants.length >= state.targetCount) {
           alert(`Ya has alcanzado el límite de ${state.targetCount} participantes configurados.`);
           return;
         }
 
-        // Create new
         const newP = {
           id: 'p_' + Date.now(),
           name: name,
           pin: pin,
-          gifts: [...currentTempGifts]
+          gifts: []
         };
         state.participants.push(newP);
       }
@@ -611,12 +780,15 @@
       document.getElementById('input-pin').value = p.pin;
       document.getElementById('form-title').textContent = "Editar Participante";
       document.getElementById('btn-cancel-edit').classList.remove('hidden');
-
-      currentTempGifts = p.gifts ? [...p.gifts] : [];
-      renderTempGifts();
     }
 
     function deleteParticipant(id) {
+      const p = state.participants.find(item => item.id === id);
+      if (p && p.name.toLowerCase() === 'chris') {
+        alert("No se puede eliminar al usuario Administrador (Chris).");
+        return;
+      }
+
       if (confirm("¿Eliminar este participante?")) {
         state.participants = state.participants.filter(p => p.id !== id);
         state.restrictions = state.restrictions.filter(r => r.giverId !== id && r.receiverId !== id);
@@ -632,11 +804,33 @@
       document.getElementById('edit-id').value = "";
       document.getElementById('form-title').textContent = "Agregar Participante";
       document.getElementById('btn-cancel-edit').classList.add('hidden');
-      currentTempGifts = [];
-      renderTempGifts();
     }
 
-    // GIFT MODAL HANDLERS
+    // USER GIFTS
+    function renderMyGifts() {
+      const container = document.getElementById('my-gifts-container');
+      if (!currentUser || !currentUser.gifts || currentUser.gifts.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400 italic py-6 text-center bg-black/20 rounded-2xl">No has agregado regalos a tu lista aún. Haz clic en "Añadir Regalo" para comenzar.</p>`;
+        return;
+      }
+
+      container.innerHTML = currentUser.gifts.map(g => `
+        <div class="p-4 bg-white/5 rounded-2xl border border-white/10 flex items-start justify-between gap-4">
+          <div class="flex items-start gap-3 overflow-hidden">
+            ${g.image ? `<img src="${g.image}" class="w-16 h-16 rounded-xl object-cover flex-shrink-0">` : `<div class="w-16 h-16 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center flex-shrink-0 text-2xl"><i class="fa-solid fa-gift"></i></div>`}
+            <div class="overflow-hidden">
+              <h4 class="font-bold text-slate-100 text-base truncate">${g.title}</h4>
+              ${g.desc ? `<p class="text-xs text-slate-300 mt-1">${g.desc}</p>` : ''}
+              ${g.link ? `<a href="${g.link}" target="_blank" class="inline-flex items-center gap-1 text-xs text-amber-300 hover:underline mt-1.5"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ver enlace del producto</a>` : ''}
+            </div>
+          </div>
+          <button onclick="deleteMyGift('${g.id}')" title="Eliminar regalo" class="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-xl transition">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
     function openGiftModal() {
       currentGiftImageData = "";
       document.getElementById('gift-title').value = "";
@@ -680,9 +874,11 @@
       const desc = document.getElementById('gift-desc').value.trim();
       const link = document.getElementById('gift-link').value.trim();
 
-      if (!title) return;
+      if (!title || !currentUser) return;
 
-      currentTempGifts.push({
+      if (!currentUser.gifts) currentUser.gifts = [];
+
+      currentUser.gifts.push({
         id: 'g_' + Date.now(),
         title: title,
         desc: desc,
@@ -690,37 +886,26 @@
         image: currentGiftImageData
       });
 
-      renderTempGifts();
+      const idx = state.participants.findIndex(p => p.id === currentUser.id);
+      if (idx !== -1) state.participants[idx].gifts = currentUser.gifts;
+
+      saveToStorage();
+      renderMyGifts();
       closeGiftModal();
     }
 
-    function removeTempGift(giftId) {
-      currentTempGifts = currentTempGifts.filter(g => g.id !== giftId);
-      renderTempGifts();
+    function deleteMyGift(giftId) {
+      if (!currentUser || !currentUser.gifts) return;
+      currentUser.gifts = currentUser.gifts.filter(g => g.id !== giftId);
+
+      const idx = state.participants.findIndex(p => p.id === currentUser.id);
+      if (idx !== -1) state.participants[idx].gifts = currentUser.gifts;
+
+      saveToStorage();
+      renderMyGifts();
     }
 
-    function renderTempGifts() {
-      const container = document.getElementById('gift-items-list');
-      if (currentTempGifts.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-400 italic py-2 text-center bg-black/20 rounded-xl">Sin regalos agregados aún.</p>`;
-        return;
-      }
-
-      container.innerHTML = currentTempGifts.map(g => `
-        <div class="flex items-center justify-between gap-2 p-2 bg-black/20 rounded-xl border border-white/5 text-xs">
-          <div class="flex items-center gap-2 overflow-hidden">
-            ${g.image ? `<img src="${g.image}" class="w-8 h-8 rounded object-cover flex-shrink-0">` : `<div class="w-8 h-8 rounded bg-white/10 flex items-center justify-center text-slate-400 flex-shrink-0"><i class="fa-solid fa-gift"></i></div>`}
-            <div class="truncate">
-              <p class="font-semibold text-slate-200 truncate">${g.title}</p>
-              ${g.desc ? `<p class="text-[10px] text-slate-400 truncate">${g.desc}</p>` : ''}
-            </div>
-          </div>
-          <button type="button" onclick="removeTempGift('${g.id}')" class="text-red-400 hover:text-red-300 p-1"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-      `).join('');
-    }
-
-    // RESTRICTIONS MANAGEMENT
+    // RESTRICTIONS & DRAW
     function handleAddRestriction(e) {
       e.preventDefault();
       const giverId = document.getElementById('select-giver').value;
@@ -753,7 +938,6 @@
       renderAll();
     }
 
-    // DRAW ALGORITHM
     function executeDraw() {
       if (state.participants.length < state.targetCount) {
         alert(`Faltan participantes por registrar. Debes completar exactamente ${state.targetCount} participantes.`);
@@ -808,34 +992,26 @@
 
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       alert("¡Sorteo realizado con éxito! Las asignaciones se han generado de forma secreta.");
-      switchTab(3);
     }
 
-    // SECRET REVEAL & SCRATCH CANVAS
+    // SCRATCH CARD
     let scratchCanvas, scratchCtx;
     let isScratching = false;
 
-    function unlockSecretResult() {
-      if (!state.isDrawn) {
-        alert("Aún no se ha realizado el sorteo. Por favor realiza el sorteo en el Paso 2.");
+    function renderScratchArea() {
+      const notDrawnMsg = document.getElementById('scratch-not-drawn-msg');
+      const activeArea = document.getElementById('scratch-active-area');
+
+      if (!state.isDrawn || !currentUser) {
+        notDrawnMsg.classList.remove('hidden');
+        activeArea.classList.add('hidden');
         return;
       }
 
-      const userId = document.getElementById('select-secret-user').value;
-      const inputPin = document.getElementById('input-secret-pin').value.trim();
+      notDrawnMsg.classList.add('hidden');
+      activeArea.classList.remove('hidden');
 
-      if (!userId || !inputPin) {
-        alert("Por favor selecciona tu nombre e ingresa tu PIN.");
-        return;
-      }
-
-      const user = state.participants.find(p => p.id === userId);
-      if (!user || user.pin !== inputPin) {
-        alert("PIN incorrecto. Verifica e intenta de nuevo.");
-        return;
-      }
-
-      const targetId = state.assignments[userId];
+      const targetId = state.assignments[currentUser.id];
       const targetUser = state.participants.find(p => p.id === targetId);
 
       if (!targetUser) {
@@ -863,9 +1039,6 @@
       } else {
         document.getElementById('target-wishlist-box').classList.add('hidden');
       }
-
-      document.getElementById('pin-login-box').classList.add('hidden');
-      document.getElementById('scratch-display-area').classList.remove('hidden');
 
       initScratchCanvas();
     }
@@ -931,15 +1104,9 @@
       isScratching = false;
     }
 
-    function lockRevealCard() {
-      document.getElementById('input-secret-pin').value = '';
-      document.getElementById('select-secret-user').value = '';
-      document.getElementById('scratch-display-area').classList.add('hidden');
-      document.getElementById('pin-login-box').classList.remove('hidden');
-    }
-
     // RENDER UI
     function renderAll() {
+      renderMyGifts();
       renderParticipants();
       renderRestrictions();
       renderDropdowns();
@@ -950,6 +1117,7 @@
       const container = document.getElementById('participants-container');
       document.getElementById('participant-count').textContent = state.participants.length;
       document.getElementById('target-count-display').textContent = state.targetCount;
+      document.getElementById('input-target-count').value = state.targetCount;
 
       const submitBtn = document.getElementById('btn-submit-participant');
       if (state.participants.length >= state.targetCount) {
@@ -963,31 +1131,33 @@
       }
 
       if (state.participants.length === 0) {
-        container.innerHTML = `<div class="text-center py-8 text-slate-400 text-sm">No hay participantes aún. ¡Agrega el primero!</div>`;
+        container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">No hay participantes aún.</div>`;
         return;
       }
 
       container.innerHTML = state.participants.map(p => {
         const giftCount = p.gifts ? p.gifts.length : 0;
+        const isAdminUser = p.name.toLowerCase() === 'chris';
         return `
-          <div class="p-4 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-between gap-3">
+          <div class="p-3 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-between gap-3">
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
-                <h3 class="font-bold text-slate-100 text-base truncate">${p.name}</h3>
-                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-black/40 text-slate-400 border border-white/5">PIN: ••••</span>
+                <h3 class="font-bold text-slate-100 text-sm truncate">${p.name}</h3>
+                ${isAdminUser ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">ADMIN</span>` : ''}
               </div>
-              <p class="text-xs text-slate-400 mt-1 flex items-center gap-1">
+              <p class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
                 <i class="fa-solid fa-gift text-amber-400"></i> ${giftCount} regalo(s) sugerido(s)
               </p>
             </div>
             
             <div class="flex items-center gap-1">
-              <button onclick="editParticipant('${p.id}')" title="Editar" class="p-2 bg-white/10 hover:bg-white/20 text-slate-200 rounded-xl transition text-xs">
+              <button onclick="editParticipant('${p.id}')" title="Editar" class="p-1.5 bg-white/10 hover:bg-white/20 text-slate-200 rounded-xl transition text-xs">
                 <i class="fa-solid fa-pen-to-square"></i>
               </button>
-              <button onclick="deleteParticipant('${p.id}')" title="Eliminar" class="p-2 bg-red-500/20 hover:bg-red-500/40 text-red-300 rounded-xl transition text-xs">
+              ${!isAdminUser ? `
+              <button onclick="deleteParticipant('${p.id}')" title="Eliminar" class="p-1.5 bg-red-500/20 hover:bg-red-500/40 text-red-300 rounded-xl transition text-xs">
                 <i class="fa-solid fa-trash"></i>
-              </button>
+              </button>` : ''}
             </div>
           </div>
         `;
@@ -997,7 +1167,7 @@
     function renderRestrictions() {
       const container = document.getElementById('restrictions-list');
       if (state.restrictions.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-400 italic">No hay restricciones configuradas.</p>`;
+        container.innerHTML = `<p class="text-[11px] text-slate-400 italic">No hay exclusiones configuradas.</p>`;
         return;
       }
 
@@ -1007,9 +1177,9 @@
         if (!giver || !receiver) return '';
 
         return `
-          <div class="flex items-center justify-between p-2 rounded-xl bg-black/20 border border-white/5 text-xs">
-            <span class="text-slate-200"><strong class="text-rose-300">${giver.name}</strong> 🚫 NO regala a <strong class="text-rose-300">${receiver.name}</strong></span>
-            <button onclick="deleteRestriction('${r.id}')" class="text-slate-400 hover:text-red-300 p-1"><i class="fa-solid fa-xmark"></i></button>
+          <div class="flex items-center justify-between p-2 rounded-xl bg-black/20 border border-white/5 text-[11px]">
+            <span class="text-slate-200"><strong class="text-rose-300">${giver.name}</strong> 🚫 NO a <strong class="text-rose-300">${receiver.name}</strong></span>
+            <button onclick="deleteRestriction('${r.id}')" class="text-slate-400 hover:text-red-300 p-0.5"><i class="fa-solid fa-xmark"></i></button>
           </div>
         `;
       }).join('');
@@ -1018,49 +1188,38 @@
     function renderDropdowns() {
       const giverSelect = document.getElementById('select-giver');
       const receiverSelect = document.getElementById('select-receiver');
-      const userSelect = document.getElementById('select-secret-user');
 
       const optionsHtml = state.participants.map(p => `<option value="${p.id}" class="bg-slate-900">${p.name}</option>`).join('');
 
-      giverSelect.innerHTML = `<option value="" class="bg-slate-900">Seleccionar persona...</option>` + optionsHtml;
-      receiverSelect.innerHTML = `<option value="" class="bg-slate-900">Seleccionar persona prohibida...</option>` + optionsHtml;
-      userSelect.innerHTML = `<option value="" class="bg-slate-900">Selecciona tu nombre...</option>` + optionsHtml;
+      if (giverSelect) giverSelect.innerHTML = `<option value="" class="bg-slate-900">Persona...</option>` + optionsHtml;
+      if (receiverSelect) receiverSelect.innerHTML = `<option value="" class="bg-slate-900">NO regala a...</option>` + optionsHtml;
     }
 
     function renderStats() {
-      document.getElementById('stat-participants').textContent = state.participants.length;
-      document.getElementById('stat-target-participants').textContent = state.targetCount;
-      
-      const statusEl = document.getElementById('stat-draw-status');
       const drawBtn = document.getElementById('btn-execute-draw');
       const warningMsg = document.getElementById('draw-warning-msg');
 
+      if (!drawBtn) return;
+
       if (state.isDrawn) {
-        statusEl.textContent = "Sorteo Completado ¡Listo!";
-        statusEl.className = "font-bold text-emerald-400";
         drawBtn.disabled = false;
-        drawBtn.className = "w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-slate-950 font-extrabold text-lg rounded-2xl shadow-xl transition transform active:scale-95 flex items-center justify-center gap-2";
+        drawBtn.className = "w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-slate-950 font-extrabold text-base rounded-2xl shadow-xl transition transform active:scale-95 flex items-center justify-center gap-2";
         drawBtn.innerHTML = `<i class="fa-solid fa-shuffle"></i> ¡Volver a Sortear!`;
         warningMsg.classList.add('hidden');
       } else if (state.participants.length < state.targetCount) {
-        statusEl.textContent = "Faltan participantes";
-        statusEl.className = "font-bold text-amber-400";
         drawBtn.disabled = true;
-        drawBtn.className = "w-full py-4 bg-gradient-to-r from-slate-600 to-slate-700 text-slate-400 font-extrabold text-lg rounded-2xl shadow-xl cursor-not-allowed transition flex items-center justify-center gap-2";
+        drawBtn.className = "w-full py-3.5 bg-gradient-to-r from-slate-600 to-slate-700 text-slate-400 font-extrabold text-base rounded-2xl shadow-xl cursor-not-allowed transition flex items-center justify-center gap-2";
         drawBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Faltan participantes para sortear`;
         warningMsg.classList.remove('hidden');
         warningMsg.textContent = `Faltan ${state.targetCount - state.participants.length} participante(s) por registrar para alcanzar la meta.`;
       } else {
-        statusEl.textContent = "Listo para sortear";
-        statusEl.className = "font-bold text-emerald-400";
         drawBtn.disabled = false;
-        drawBtn.className = "w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-slate-950 font-extrabold text-lg rounded-2xl shadow-xl transition transform active:scale-95 flex items-center justify-center gap-2";
+        drawBtn.className = "w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-slate-950 font-extrabold text-base rounded-2xl shadow-xl transition transform active:scale-95 flex items-center justify-center gap-2";
         drawBtn.innerHTML = `<i class="fa-solid fa-shuffle"></i> ¡Generar Sorteo Secreto!`;
         warningMsg.classList.add('hidden');
       }
     }
 
-    // BACKGROUND PARTICLES (SNOW/SPARKLES)
     function initParticles() {
       const container = document.getElementById('particles-container');
       container.innerHTML = '';
